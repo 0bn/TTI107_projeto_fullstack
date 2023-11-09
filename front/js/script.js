@@ -43,10 +43,10 @@ async function CadastrarFilme() {
         }
     }
     
-else{
+    else{
         let alert = document.querySelector('.alert');
         alert.classList.add('show');
-        alert.classList.remove('d-nome');
+        alert.classList.remove('d-none');
         setTimeout(() => {
             alert.classList.add('d-none');
             alert.classList.remove('show');
