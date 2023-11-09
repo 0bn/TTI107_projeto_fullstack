@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const mongoose = require('mongoose');
 const app = express();
 app.use(express.json());
 app.use(cors());
@@ -7,13 +8,22 @@ app.use(cors());
 let filmes = [
     {
     titulo: "Forrest Gump - O Contador de Histórias",
-    sinopse: "Quarenta anos da história dos Estados Unidos, vistos pelos olhos de Forrest Gump (Tom Hanks),um rapaz com QI abaixo da média e boas intenções."
+    sinopse: "Quarenta anos da história dos Estados Unidos, vistos pelos olhos de Forrest Gump (Tom Hanks), um rapaz com QI abaixo da média e boas intenções."
     },
     {
     titulo: "Um Sonho de Liberdade",
     sinopse: "Em 1946, Andy Dufresne (Tim Robbins), um jovem e bem sucedido banqueiro, tem a sua vida radicalmente modificada ao ser condenado por um crime que nunca cometeu, o homicídio de sua esposa e do amante dela"
     }
 ]
+
+async function conectarMongoDB(){
+    await mongoose.connect(`mongodb+srv://admin:admin@cluster0.nitc5vb.mongodb.net/?retryWrites=true&w=majority`)
+}
+
+const Filme = mongoose.model("Filme", mongoose.Schema({
+    titulo: {type: String},
+    sinopse: {type: String}
+}))
 
 //Acesso para riquisição http-get /oi
 app.get('/oi', (req, res) => {res.send("Oi!")});
@@ -26,7 +36,7 @@ app.post('/filmes', (req, res) => {
     //Obter dados que serão inseridos
     const titulo = req.body.titulo;
     const sinopse = req.body.sinopse;
-    //Montar o objeto JSON que seré inserido
+    //Montar o objeto JSON que será inserido
     const filme = {titulo: titulo, sinopse: sinopse};
     //Inserir o novo filme no vetor filmes
     filmes.push(filme);
@@ -35,4 +45,12 @@ app.post('/filmes', (req, res) => {
 });
 
 
-app.listen(3000, () => console.log("App subido & rodando!"));
+app.listen(3000, () => {
+    try{
+        conectarMongoDB();
+        console.log("Conexão OK e aplicativo up & running!");
+        }
+    catch (e){
+        console.log("Erro: ", e);
+        }
+})
