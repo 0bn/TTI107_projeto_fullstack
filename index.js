@@ -29,19 +29,24 @@ const Filme = mongoose.model("Filme", mongoose.Schema({
 app.get('/oi', (req, res) => {res.send("Oi!")});
 
 //Acesso para requisição http-get /filmes
-app.get('/filmes', (req, res) => {res.send(filmes)});
+app.get('/filmes', async (req, res) => {
+    const filmes = await Filme.find();
+    res.json(filmes);
+});
 
 //Acesso para requisição http-post /filmes, ou seja, vamos inserir um novo filme na lista EMMMMMMM MEMORIAAAAAAA
-app.post('/filmes', (req, res) => {
+app.post('/filmes', async (req, res) => {
     //Obter dados que serão inseridos
     const titulo = req.body.titulo;
     const sinopse = req.body.sinopse;
     //Montar o objeto JSON que será inserido
-    const filme = {titulo: titulo, sinopse: sinopse};
+    const filme = new Filme({titulo: titulo, sinopse: sinopse});
     //Inserir o novo filme no vetor filmes
-    filmes.push(filme);
+    await filme.save();
+    //Trazemos do banco a coleção atualizada
+    const filmes = await Filme.find();
     //Apenas para conferir
-    res.send(filmes);
+    res.json(filmes);
 });
 
 
