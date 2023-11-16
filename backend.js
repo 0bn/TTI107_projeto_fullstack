@@ -1,20 +1,11 @@
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
+const uniqueValidator = require('mongoose-unique-validator')
+const bcrypt = require('bcrypt');
 const app = express();
 app.use(express.json());
 app.use(cors());
-
-let filmes = [
-    {
-    titulo: "Forrest Gump - O Contador de Histórias",
-    sinopse: "Quarenta anos da história dos Estados Unidos, vistos pelos olhos de Forrest Gump (Tom Hanks), um rapaz com QI abaixo da média e boas intenções."
-    },
-    {
-    titulo: "Um Sonho de Liberdade",
-    sinopse: "Em 1946, Andy Dufresne (Tim Robbins), um jovem e bem sucedido banqueiro, tem a sua vida radicalmente modificada ao ser condenado por um crime que nunca cometeu, o homicídio de sua esposa e do amante dela"
-    }
-]
 
 async function conectarMongoDB(){
     await mongoose.connect(`mongodb+srv://admin:admin@cluster0.nitc5vb.mongodb.net/?retryWrites=true&w=majority`)
@@ -24,6 +15,14 @@ const Filme = mongoose.model("Filme", mongoose.Schema({
     titulo: {type: String},
     sinopse: {type: String}
 }))
+
+const usuarioSchema = mongoose.Schema({
+    login: {type: String, unique: true, required: true},
+    senha: {type: String, required: true}
+})
+
+usuarioSchema.plugin(uniqueValidator);
+const Usuario = mongoose.model("Usuario", usuarioSchema);
 
 //Acesso para riquisição http-get /oi
 app.get('/oi', (req, res) => {res.send("Oi!")});
@@ -48,7 +47,21 @@ app.post('/filmes', async (req, res) => {
     //Apenas para conferir
     res.json(filmes);
 });
-
+app.post('/signup', async (req, res) => {
+    try{
+    const login = req.body.login;
+    const senha = req.body.senha;
+    const criptografada = await bcrypt.hash(senha, 10);
+    const usuario = new Usuario({login: login, senha: criptografada});
+    const respostaMongo = await usuario.save();
+    console.log(respostaMongo);
+    res.status(201).end();
+    }
+    catch(e){
+        console.log(e);
+        res.status(409).end();
+    }
+})
 
 app.listen(3000, () => {
     try{
